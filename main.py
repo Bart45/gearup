@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+
+from fastapi.responses import JSONResponse
 
 from pydantic import BaseModel
 
@@ -6,10 +8,10 @@ from typing import Dict
 
 app = FastAPI()
 app.count = 0
-#xd
+app.patient_data = []
 
 
-class AssignPatientIdRq(BaseModel):
+class Patient(BaseModel):
     name: str
     surename: str
 
@@ -45,6 +47,19 @@ def method_put():
 
 
 @app.post("/patient", response_model=AssignPatientIdResp)
-def assign_patient_id(rq: AssignPatientIdRq):
-    app.count += 1
-    return AssignPatientIdResp(id=app.count, patient={"name": rq.name, "surename": rq.surename})
+def assign_patient_id(rq: Patient):
+    temp_patient = {"id": len(app.patient_data), "patient": {"name": rq.name, "surename": rq.surename}}
+    app.patient_data += [temp_patient]
+    return AssignPatientIdResp(id=temp_patient["id"], patient=temp_patient["patient"])
+
+
+@app.get("/patient_data")
+def method_get_patient_data():
+    return app.patient_data
+
+
+@app.get("/patient/{index}", response_model=AssignPatientIdResp)
+def method_get_patient_by_id(index: int):
+    if 0 <= index < len(app.patient_data):
+        return AssignPatientIdResp(id=app.patient_data[index]["id"], patient=app.patient_data[index]["patient"])
+    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
