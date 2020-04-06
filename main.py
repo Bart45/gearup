@@ -47,4 +47,4 @@ def method_put():
 @app.post("/patient", response_model=AssignPatientIdResp)
 def assign_patient_id(rq: AssignPatientIdRq):
     app.count += 1
-    return AssignPatientIdResp(id=app.N, patient={"name": rq.name, "surename": rq.surename})
+    return AssignPatientIdResp(id=app.count, patient={"name": rq.name, "surename": rq.surename})
