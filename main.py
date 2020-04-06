@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from typing import Dict
 
 app = FastAPI()
-app.N = 0
+app.count = 0
+#xd
 
 
 class AssignPatientIdRq(BaseModel):
@@ -45,5 +46,5 @@ def method_put():
 
 @app.post("/patient", response_model=AssignPatientIdResp)
 def assign_patient_id(rq: AssignPatientIdRq):
-    app.N += 1
+    app.count += 1
     return AssignPatientIdResp(id=app.N, patient={"name": rq.name, "surename": rq.surename})
