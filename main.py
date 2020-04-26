@@ -20,7 +20,7 @@ class AssignPatientIdResp(BaseModel):
     id: int
     patient: Dict
 
-
+@app.get("/welcome")
 @app.get("/")
 def root():
     return {"message": "Hello World during the coronavirus pandemic!"}
