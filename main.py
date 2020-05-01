@@ -1,10 +1,14 @@
-from fastapi import FastAPI, status
+import sqlite3
+
+from fastapi import FastAPI, status, Response, Cookie, HTTPException
 
 from fastapi.responses import JSONResponse
 
 from pydantic import BaseModel
 
 from typing import Dict
+
+from hashlib import sha256
 
 app = FastAPI()
 app.count = 0
@@ -19,6 +23,16 @@ class Patient(BaseModel):
 class AssignPatientIdResp(BaseModel):
     id: int
     patient: Dict
+
+@app.on_event("startup")
+async def startup():
+    app.db_connection = sqlite3.connect('chinook.db')
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    app.db_connection.close()
+
 
 @app.get("/welcome")
 @app.get("/")
@@ -63,3 +77,14 @@ def method_get_patient_by_id(index: int):
     if 0 <= index < len(app.patient_data):
         return AssignPatientIdResp(id=app.patient_data[index]["id"], patient=app.patient_data[index]["patient"])
     return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.get("/tracks/{page}/{per_page}")
+async def method_get_tracks(page: int, per_page: int):
+    app.db_connection.row_factory = sqlite3.Row
+    cursor = app.db_connection.cursor()
+    offset = page * per_page
+    tracks = cursor.execute(
+        "SELECT * FROM tracks ORDER BY TrackId LIMIT ? OFFSET ?",
+        (per_page, offset - 1)).fetchall()
+    return tracks
