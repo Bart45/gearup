@@ -79,7 +79,7 @@ def method_get_patient_by_id(index: int):
     return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.get("/tracks/{page}/{per_page}")
+@app.get("/tracks/{page = 0}/{per_page = 10}")
 async def method_get_tracks(page: int, per_page: int):
     app.db_connection.row_factory = sqlite3.Row
     cursor = app.db_connection.cursor()
