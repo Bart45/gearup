@@ -1,6 +1,6 @@
 import sqlite3
 
-from fastapi import FastAPI, status, Response, Cookie, HTTPException
+from fastapi import FastAPI, status, Response, Cookie, HTTPException, Request
 
 from fastapi.responses import JSONResponse
 
@@ -79,8 +79,15 @@ def method_get_patient_by_id(index: int):
     return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.get("/tracks/{page}/{per_page}")
-async def method_get_tracks(page=0, per_page=10):
+@app.get("/tracks")
+async def method_get_tracks(request: Request):
+    page = 0
+    per_page = 10
+    if request.query_params.__contains__("page"):
+        page = int(request.query_params.get("page"))
+    if request.query_params.__contains__("per_page"):
+        per_page = int(request.query_params.get("per_page"))
+
     app.db_connection.row_factory = sqlite3.Row
     cursor = app.db_connection.cursor()
     offset = page * per_page
