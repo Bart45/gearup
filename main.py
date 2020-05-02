@@ -24,6 +24,7 @@ class AssignPatientIdResp(BaseModel):
     id: int
     patient: Dict
 
+
 @app.on_event("startup")
 async def startup():
     app.db_connection = sqlite3.connect('chinook.db')
@@ -95,3 +96,23 @@ async def method_get_tracks(request: Request):
         "SELECT * FROM tracks ORDER BY TrackId LIMIT ? OFFSET ?",
         (per_page, offset - 1)).fetchall()
     return tracks
+
+
+@app.get("/tracks/composers")
+async def method_get_composers_tracks(request: Request):
+    if request.query_params.__contains__("composer_name"):
+        composer = request.query_params.get("composer_name")
+    else:
+        return JSONResponse(status_code=status.HTTP_412_PRECONDITION_FAILED)
+
+    app.db_connection.row_factory = lambda cursor, x: x[0]
+    cursor = app.db_connection.cursor()
+    if composer in cursor.execute("SELECT DISTINCT Composer FROM tracks").fetchall():
+
+        composer_tracks = cursor.execute(
+            "SELECT Name FROM tracks WHERE Composer = ? ORDER BY Name ",
+            (composer, )).fetchall()
+    else:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
+
+    return composer_tracks
