@@ -107,9 +107,12 @@ async def method_get_composers_tracks(request: Request):
 
     app.db_connection.row_factory = lambda cursor, x: x[0]
     cursor = app.db_connection.cursor()
-    if composer in cursor.execute("SELECT DISTINCT Composer FROM tracks").fetchall():
+    if composer in cursor.execute("SELECT Name FROM artists").fetchall():
         composer_tracks = cursor.execute(
-            "SELECT Name FROM tracks WHERE Composer = ? ORDER BY Name ",
+            '''SELECT tracks.name AS track_name FROM tracks 
+            JOIN albums ON tracks.albumid = albums.albumid 
+            JOIN artists ON albums.artistid = artists.artistid 
+            WHERE artists.Name = ?;''',
             (composer, )).fetchall()
     else:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
